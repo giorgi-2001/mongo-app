@@ -1,0 +1,75 @@
+services:
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build: ./app
+    environment:
+      MONGO_URI: mongodb://root:example@mongo:27017/
+    volumes:
+      - ./app/src:/app/src
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+
+  otel-collector:
+    image: otel/opentelemetry-collector
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otelcol/config.yaml
+    depends_on:
+      - loki
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+      - "8889:8889"
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/config.yaml
+    command: -config.file=/etc/loki/config.yaml
+
+  jaeger:
+    image: jaegertracing/jaeger:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686" # Jaeger UI (Web Browser)
+    environment:
+      - LOG_LEVEL=debug
+    command:
+      - "--set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317"
+      - "--set=receivers.otlp.protocols.http.endpoint=0.0.0.0:4318"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    depends_on:
+      - otel-collector
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - loki
+
+volumes:
+  mongo-data:
+  prometheus-data:

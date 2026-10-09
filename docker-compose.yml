@@ -7,7 +7,7 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  app:
+  mongo-app:
     build: ./app
     environment:
       MONGO_URI: mongodb://root:example@mongo:27017/
@@ -17,6 +17,13 @@ services:
       - "8000:8000"
     depends_on:
       - mongo
+
+  mongo-app-ui:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - mongo-app
 
   otel-collector:
     image: otel/opentelemetry-collector

@@ -1,4 +1,5 @@
 import logging
+import os
 
 from pythonjsonlogger.json import JsonFormatter
 from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
@@ -7,7 +8,7 @@ from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.resources import Resource
 
 
-OTEL_ENDPOINT = "http://otel-collector:4317"
+OTEL_ENDPOINT = os.getenv("OTEL_ENDPOINT", "http://otel-collector:4317")
 
 
 formater = JsonFormatter(
@@ -20,7 +21,7 @@ formater = JsonFormatter(
 )
 
 
-provider = LoggerProvider(resource=Resource.create({"service.name": "task-api"}))
+provider = LoggerProvider(resource=Resource.create({"service.name": "mongo-app"}))
 provider.add_log_record_processor(
     BatchLogRecordProcessor(OTLPLogExporter(OTEL_ENDPOINT))
 )

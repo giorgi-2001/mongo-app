@@ -10,16 +10,18 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 
+from .logger import OTEL_ENDPOINT
+
 
 def setup_telemetry():
     resource = Resource.create({
-        "service.name": "task-api",
+        "service.name": "mongo-app",
     })
 
     provider = TracerProvider(resource=resource)
 
     exporter = OTLPSpanExporter(
-        endpoint="otel-collector:4317",
+        endpoint=OTEL_ENDPOINT,
         insecure=True,
     )
 
@@ -30,7 +32,7 @@ def setup_telemetry():
     trace.set_tracer_provider(provider)
 
     metric_exporter = OTLPMetricExporter(
-        endpoint="otel-collector:4317",
+        endpoint=OTEL_ENDPOINT,
         insecure=True,
     )
 

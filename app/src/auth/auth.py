@@ -1,6 +1,8 @@
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 
+from app.src.users.model import User
+
 from ..users import service as user_service
 from ..users.utils import verify_password
 from .utils import decode_access_token
@@ -61,4 +63,4 @@ async def get_current_active_user(token: token_dependency):
     return user
 
 
-user_dependency = Annotated[str, Depends(get_current_active_user)]
+user_dependency = Annotated[User, Depends(get_current_active_user)]

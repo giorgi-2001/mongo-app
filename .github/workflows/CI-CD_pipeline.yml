@@ -80,18 +80,18 @@ jobs:
       contents: write
     env:
       MONGO_APP_TAG: ${{ github.sha }}
-      MONGO_APP_HELM_PATH: mongo-app-helm
-      MONGO_APP_VALUES_PATH: mongo-app-helm/mongo-app/values.yaml
+      MONGO_APP_HELM_PATH: $GITHUB_WORKSPACE/mongo-app-helm
+      MONGO_APP_VALUES_PATH: $GITHUB_WORKSPACE/mongo-app-helm/mongo-app/values.yaml
     steps:
+      - name: Check out current repository
+        uses: actions/checkout@v4
+
       - name: Clone helm repo
         uses: actions/checkout@v4
         with:
           repository: giorgi-2001/mongo-app-helm
           token: ${{ secrets.GITHUB_TOKEN }}
           path: mongo-app-helm
-
-      - name: Check out current repository
-        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5

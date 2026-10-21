@@ -80,8 +80,8 @@ jobs:
       contents: write
     env:
       MONGO_APP_TAG: ${{ github.sha }}
-      MONGO_APP_HELM_PATH: $GITHUB_WORKSPACE/mongo-app-helm
-      MONGO_APP_VALUES_PATH: $GITHUB_WORKSPACE/mongo-app-helm/mongo-app/values.yaml
+      MONGO_APP_HELM_PATH: ${{ github.workspace }}/mongo-app-helm
+      MONGO_APP_VALUES_PATH: ${{ github.workspace }}/mongo-app-helm/mongo-app/values.yaml
     steps:
       - name: Check out current repository
         uses: actions/checkout@v4

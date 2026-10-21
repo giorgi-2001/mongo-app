@@ -90,7 +90,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: giorgi-2001/mongo-app-helm
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.HELM_REPO_PAT }}
           path: mongo-app-helm
 
       - name: Set up Python

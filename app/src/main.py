@@ -21,12 +21,8 @@ setup_telemetry()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting the application")
-    logger.info("Initializing the database")
 
-    try:
-        await init_database()
-    except Exception as err:
-        logger.error(f"Error initializing the database: {err}")
+    await init_database()
 
     yield
 

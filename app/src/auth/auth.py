@@ -1,8 +1,7 @@
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from app.src.users.model import User
-
+from ..users.model import User
 from ..users import service as user_service
 from ..users.utils import verify_password
 from .utils import decode_access_token

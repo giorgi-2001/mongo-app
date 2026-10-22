@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
+from authlib.integrations.starlette_client import OAuthError
 
 from typing import Annotated
 
@@ -45,8 +46,12 @@ async def login_via_google(request: Request):
 
 @router.get("/oidc/google/callback")
 async def google_auth_callback(request: Request):
-    """http://localhost:8000"""
-    email = await authenticate_via_google(request)
+    try:
+        email = await authenticate_via_google(request)
+    except OAuthError as err:
+        redirect_url = f"{FRONTEND_HOSTNAME}/login?error={err}"
+        return RedirectResponse(redirect_url)
+
     access_token = create_access_token(data={"sub": email})
     refresh_token = create_refresh_token(data={"sub": email})
     redirect_url = f"{FRONTEND_HOSTNAME}/login-success?token={access_token}"

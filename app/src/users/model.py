@@ -19,16 +19,16 @@ class UserResponse(BaseModel):
     isActive: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class User(Document):
     email: Annotated[str, Indexed(unique=True)]
     password: str
-    age: int
+    age: int = 0
     isActive: bool = True
     skills: list[str] = []
-    role: str
+    role: str = "user"
 
     class Settings:
         name = "users"

@@ -4,7 +4,8 @@ from .utils import hash_password
 
 async def create_user(user_data: dict) -> User:
     """Create a new user with hashed password."""
-    user_data['password'] = hash_password(user_data['password'])
+    if user_data.get("password"):
+        user_data['password'] = hash_password(user_data['password'])
     user = User(**user_data)
     await user.insert()
     return user

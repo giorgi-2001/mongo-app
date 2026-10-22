@@ -10,10 +10,13 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 
-from .logger import OTEL_ENDPOINT
+from .config import OTEL_ENDPOINT
 
 
 def setup_telemetry():
+    if not OTEL_ENDPOINT:
+        return
+
     resource = Resource.create({
         "service.name": "mongo-app",
     })
@@ -29,8 +32,6 @@ def setup_telemetry():
         BatchSpanProcessor(exporter)
     )
 
-    trace.set_tracer_provider(provider)
-
     metric_exporter = OTLPMetricExporter(
         endpoint=OTEL_ENDPOINT,
         insecure=True,
@@ -44,7 +45,7 @@ def setup_telemetry():
         resource=resource,
         metric_readers=[metric_reader],
     )
-
+    trace.set_tracer_provider(provider)
     metrics.set_meter_provider(meter_provider)
 
     PymongoInstrumentor().instrument()

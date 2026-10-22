@@ -175,6 +175,7 @@ def test_telemetry_setup_registers_tracing_metrics_and_mongodb_instrumentation(m
     trace_processor_factory = MagicMock(return_value=trace_processor)
     metric_reader_factory = MagicMock(return_value=metric_reader)
 
+    monkeypatch.setattr(telemetry, "OTEL_ENDPOINT", "http://otel-collector:4317")
     monkeypatch.setattr(telemetry.Resource, "create", resource_factory)
     monkeypatch.setattr(telemetry, "TracerProvider", tracer_factory)
     monkeypatch.setattr(telemetry, "MeterProvider", meter_factory)

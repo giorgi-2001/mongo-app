@@ -1,9 +1,11 @@
+import { useEffect } from 'react'
 import axios from 'axios'
 import { createRootRoute, createRoute, createRouter, Outlet, redirect, RouterProvider } from '@tanstack/react-router'
 import { AuthPage } from './components/auth-page'
 import { ProfilePage } from './components/profile-page'
 import { getCurrentUser } from './lib/auth-api'
 import { ensureAccessToken } from './lib/auth-session'
+import { useAuthStore } from './lib/auth-store'
 import './App.css'
 
 const rootRoute = createRootRoute({
@@ -28,6 +30,15 @@ const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/register',
   component: () => <AuthPage mode="register" />,
+})
+
+const loginSuccessRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/login-success',
+  validateSearch: (search: Record<string, unknown>) => ({
+    token: typeof search.token === 'string' ? search.token : undefined,
+  }),
+  component: LoginSuccessPage,
 })
 
 const profileRoute = createRoute({
@@ -56,7 +67,23 @@ const profileRoute = createRoute({
   component: () => <ProfilePage profile={profileRoute.useLoaderData()} />,
 })
 
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute, registerRoute, profileRoute])
+function LoginSuccessPage() {
+  const { token } = loginSuccessRoute.useSearch()
+  const navigate = loginSuccessRoute.useNavigate()
+
+  useEffect(() => {
+    if (token) {
+      useAuthStore.getState().setAccessToken(token)
+      void navigate({ to: '/profile', replace: true })
+    } else {
+      void navigate({ to: '/login', replace: true })
+    }
+  }, [navigate, token])
+
+  return <main className="login-success" role="status">Completing sign-in...</main>
+}
+
+const routeTree = rootRoute.addChildren([indexRoute, loginRoute, registerRoute, loginSuccessRoute, profileRoute])
 const router = createRouter({ routeTree })
 
 export default function App() {

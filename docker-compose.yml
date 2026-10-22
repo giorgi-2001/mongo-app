@@ -11,6 +11,7 @@ services:
     build: ./app
     environment:
       MONGO_URI: mongodb://root:example@mongo:27017/
+      OTEL_ENDPOINT: http://otel-collector:4317
     volumes:
       - ./app/src:/app/src
     ports:

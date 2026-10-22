@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Response
+from starlette.middleware.sessions import SessionMiddleware
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from contextlib import asynccontextmanager
@@ -64,6 +65,12 @@ async def log_response_events(request: Request, call_next):
     message = f"{log_level_name}\t{request.url}"
     logger.log(get_log_level(response.status_code), msg=message, extra=extra)
     return response
+
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="SUPER_SECRET_SESSION_KEY_CHANGE_THIS"
+)
 
 
 app.include_router(users_router, prefix=API_PREFIX)

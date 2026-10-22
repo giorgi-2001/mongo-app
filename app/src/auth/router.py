@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
+from authlib.integrations.starlette_client import OAuthError
 
 from typing import Annotated
 
 from .auth import authenticate_user
+from .oidc_google import authenticate_via_google, oauth
 from .utils import create_access_token, create_refresh_token, decode_refresh_token
+from ..config import FRONTEND_HOSTNAME
 
 
 class Token(BaseModel):
@@ -32,6 +36,33 @@ async def login(form: form_dependency, response: Response):
         samesite="strict"
     )
     return Token(access_token=access_token, token_type="bearer")
+
+
+@router.get("/oidc/google/login")
+async def login_via_google(request: Request):
+    redirect_uri = request.url_for("google_auth_callback")
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@router.get("/oidc/google/callback")
+async def google_auth_callback(request: Request):
+    try:
+        email = await authenticate_via_google(request)
+    except OAuthError as err:
+        redirect_url = f"{FRONTEND_HOSTNAME}/login?error={err}"
+        return RedirectResponse(redirect_url)
+
+    access_token = create_access_token(data={"sub": email})
+    refresh_token = create_refresh_token(data={"sub": email})
+    redirect_url = f"{FRONTEND_HOSTNAME}/login-success?token={access_token}"
+    response = RedirectResponse(redirect_url)
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite="strict"
+    )
+    return response
 
 
 @router.get("/refresh")

@@ -11,6 +11,7 @@ from .logger import logger
 from .telemetry import setup_telemetry
 from .users.router import router as users_router
 from .auth.router import router as auth_router
+from .config import MIDLEWARE_SECRET_KEY
 
 
 API_PREFIX = "/api/v1"
@@ -61,15 +62,13 @@ async def log_response_events(request: Request, call_next):
             "userAgent": request.headers.get("User-Agent")
         }
     }
-    log_level_name = logging.getLevelName(get_log_level(response.status_code))
-    message = f"{log_level_name}\t{request.url}"
-    logger.log(get_log_level(response.status_code), msg=message, extra=extra)
+    logger.log(get_log_level(response.status_code), msg=str(request.url), extra=extra)
     return response
 
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key="SUPER_SECRET_SESSION_KEY_CHANGE_THIS"
+    secret_key=MIDLEWARE_SECRET_KEY
 )
 
 

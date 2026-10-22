@@ -1,6 +1,5 @@
 from pymongo import AsyncMongoClient
 from beanie import init_beanie
-from beanie.exceptions import CollectionWasNotInitialized
 
 from .users.model import User
 from .logger import logger
@@ -22,7 +21,7 @@ async def init_database():
             logger.info(f"Initializing the database... Retry count: {retry_count}")
             await init_beanie(client[DB_NAME], document_models=[User])
             db_initialized = True
-        except CollectionWasNotInitialized as err:
+        except Exception as err:
             time.sleep(5)
             logger.error("Error occured while trying to connect to database", extra={"error": err})
             retry_count += 1

@@ -99,14 +99,14 @@ def test_lifespan_initializes_database_and_logs_shutdown(monkeypatch, main_modul
 
     async def run_lifespan():
         async with main_module.lifespan(main_module.app):
-            assert events == ["Starting the application", "Initializing the database", "database"]
+            assert events == ["Starting the application", "database"]
 
     asyncio.run(run_lifespan())
 
     assert events[-1] == "Stopping the application"
 
 
-def test_lifespan_continues_when_database_initialization_fails(monkeypatch, main_module):
+def test_lifespan_propagates_database_initialization_failure(monkeypatch, main_module):
     events = []
 
     async def fail_database():
@@ -114,15 +114,15 @@ def test_lifespan_continues_when_database_initialization_fails(monkeypatch, main
 
     monkeypatch.setattr(main_module, "init_database", fail_database)
     monkeypatch.setattr(main_module.logger, "info", lambda message: events.append(message))
-    monkeypatch.setattr(main_module.logger, "error", lambda message: events.append(message))
 
     async def run_lifespan():
         async with main_module.lifespan(main_module.app):
-            assert any("database unavailable" in message for message in events)
+            pass
 
-    asyncio.run(run_lifespan())
+    with pytest.raises(RuntimeError, match="database unavailable"):
+        asyncio.run(run_lifespan())
 
-    assert events[-1] == "Stopping the application"
+    assert events == ["Starting the application"]
 
 
 def test_index_endpoint_reports_app_status(main_module):
